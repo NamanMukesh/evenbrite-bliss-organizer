@@ -39,14 +39,14 @@ const EventList: React.FC<EventListProps> = ({
   featured = false
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('date');
 
   const filteredEvents = events
     .filter(event => 
       (event.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
        event.description.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (selectedCategory ? event.category === selectedCategory : true)
+      (selectedCategory === 'all' ? true : event.category === selectedCategory)
     )
     .sort((a, b) => {
       if (sortBy === 'date') {
@@ -63,7 +63,7 @@ const EventList: React.FC<EventListProps> = ({
 
   const resetFilters = () => {
     setSearchTerm('');
-    setSelectedCategory('');
+    setSelectedCategory('all');
     setSortBy('date');
   };
 
@@ -103,7 +103,7 @@ const EventList: React.FC<EventListProps> = ({
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Categories</SelectItem>
+                  <SelectItem value="all">All Categories</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category} value={category}>
                       {category}
@@ -162,7 +162,7 @@ const EventList: React.FC<EventListProps> = ({
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Categories</SelectItem>
+                          <SelectItem value="all">All Categories</SelectItem>
                           {categories.map((category) => (
                             <SelectItem key={category} value={category}>
                               {category}

@@ -384,13 +384,13 @@ const EventForm: React.FC<EventFormProps> = ({
                         </Tooltip>
                       </TooltipProvider>
                     </div>
-                    <Select defaultValue={initialEvent?.featured ? "true" : "false"}>
+                    <Select defaultValue={initialEvent?.featured ? "yes" : "no"}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select featured status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="true">Yes</SelectItem>
-                        <SelectItem value="false">No</SelectItem>
+                        <SelectItem value="yes">Yes</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
