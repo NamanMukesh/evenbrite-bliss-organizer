@@ -42,12 +42,16 @@ const Navbar = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="outline" size="sm" className="text-eventify-darkPurple border-eventify-darkPurple hover:bg-eventify-lightPurple hover:text-eventify-purple">
-              Log in
-            </Button>
-            <Button size="sm" className="bg-eventify-purple hover:bg-opacity-90 text-white">
-              Sign up
-            </Button>
+            <Link to="/login">
+              <Button variant="outline" size="sm" className="text-eventify-darkPurple border-eventify-darkPurple hover:bg-eventify-lightPurple hover:text-eventify-purple">
+                Log in
+              </Button>
+            </Link>
+            <Link to="/signup">
+              <Button size="sm" className="bg-eventify-purple hover:bg-opacity-90 text-white">
+                Sign up
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -97,12 +101,16 @@ const Navbar = () => {
               Dashboard
             </Link>
             <div className="pt-4 flex flex-col space-y-2">
-              <Button variant="outline" className="w-full justify-center text-eventify-darkPurple border-eventify-darkPurple hover:bg-eventify-lightPurple hover:text-eventify-purple">
-                Log in
-              </Button>
-              <Button className="w-full justify-center bg-eventify-purple hover:bg-opacity-90 text-white">
-                Sign up
-              </Button>
+              <Link to="/login" className="w-full" onClick={() => setIsMenuOpen(false)}>
+                <Button variant="outline" className="w-full justify-center text-eventify-darkPurple border-eventify-darkPurple hover:bg-eventify-lightPurple hover:text-eventify-purple">
+                  Log in
+                </Button>
+              </Link>
+              <Link to="/signup" className="w-full" onClick={() => setIsMenuOpen(false)}>
+                <Button className="w-full justify-center bg-eventify-purple hover:bg-opacity-90 text-white">
+                  Sign up
+                </Button>
+              </Link>
             </div>
           </div>
         )}
