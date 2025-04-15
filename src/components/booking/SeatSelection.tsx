@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 interface SeatSelectionProps {
   totalSeats: number;
@@ -35,10 +36,29 @@ const SeatSelection: React.FC<SeatSelectionProps> = ({
         STAGE
       </div>
       
+      {/* Legend */}
+      <div className="flex justify-center gap-6 text-sm">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-gray-200 rounded"></div>
+          <span>Available</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-eventify-purple rounded"></div>
+          <span>Selected</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-gray-400 rounded"></div>
+          <span>Booked</span>
+        </div>
+      </div>
+      
       {/* Seating */}
       <div className="grid gap-4">
         {seatRows.map((row, rowIndex) => (
           <div key={rowIndex} className="flex justify-center gap-2">
+            <div className="flex items-center justify-center w-6 text-sm font-medium text-gray-500">
+              {String.fromCharCode(65 + rowIndex)}
+            </div>
             {row.map((seatId) => {
               const isBooked = bookedSeats.includes(seatId);
               const isSelected = selectedSeats.includes(seatId);
@@ -47,21 +67,42 @@ const SeatSelection: React.FC<SeatSelectionProps> = ({
               return (
                 <button
                   key={seatId}
-                  className={`w-8 h-8 text-xs rounded flex items-center justify-center ${
-                    isBooked ? 'bg-gray-400 cursor-not-allowed' :
-                    isSelected ? 'bg-eventify-purple text-white' :
-                    'bg-gray-200 hover:bg-gray-300'
-                  }`}
+                  className={cn(
+                    "w-8 h-8 text-xs rounded flex items-center justify-center transition-colors",
+                    isBooked ? "bg-gray-400 cursor-not-allowed" :
+                    isSelected ? "bg-eventify-purple text-white" :
+                    canSelect ? "bg-gray-200 hover:bg-gray-300" :
+                    "bg-gray-200 opacity-50 cursor-not-allowed"
+                  )}
                   onClick={() => !isBooked && canSelect && onSeatSelect(seatId)}
-                  disabled={isBooked}
-                  title={`Seat ${seatId}${isBooked ? ' (Already booked)' : ''}`}
+                  disabled={isBooked || (!canSelect && !isSelected)}
+                  title={`Seat ${seatId}${isBooked ? ' (Already booked)' : isSelected ? ' (Selected)' : !canSelect ? ' (Max seats selected)' : ''}`}
                 >
                   {seatId}
                 </button>
               );
             })}
+            <div className="flex items-center justify-center w-6 text-sm font-medium text-gray-500">
+              {String.fromCharCode(65 + rowIndex)}
+            </div>
           </div>
         ))}
+      </div>
+      
+      {/* Selected seats summary */}
+      <div className="w-full max-w-md bg-gray-50 p-4 rounded-lg text-sm">
+        <div className="font-medium mb-2">Selected Seats: {selectedSeats.length}/{maxSelectableSeats}</div>
+        <div className="flex flex-wrap gap-2">
+          {selectedSeats.length > 0 ? (
+            selectedSeats.map(seat => (
+              <span key={seat} className="bg-eventify-purple text-white px-2 py-1 rounded">
+                {seat}
+              </span>
+            ))
+          ) : (
+            <span className="text-gray-500">No seats selected</span>
+          )}
+        </div>
       </div>
     </div>
   );

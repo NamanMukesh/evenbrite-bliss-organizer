@@ -2,9 +2,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { Calendar, MapPin, Ticket } from 'lucide-react';
+import { Calendar, MapPin, Ticket, IndianRupee } from 'lucide-react';
 import { EventType } from '@/data/mockData';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface EventCardProps {
   event: EventType;
@@ -19,10 +20,16 @@ const EventCard: React.FC<EventCardProps> = ({ event, featured = false }) => {
   const priceRange = `₹${lowestPrice.toFixed(0)} - ₹${highestPrice.toFixed(0)}`;
   
   return (
-    <div className={`eventify-card transition-all duration-300 ${featured ? 'md:flex md:h-80' : 'h-full'}`}>
+    <div className={cn(
+      "eventify-card transition-all duration-300",
+      featured ? 'md:flex md:h-80' : 'h-full'
+    )}>
       {/* Image */}
       <div 
-        className={`relative overflow-hidden ${featured ? 'md:w-1/2 aspect-video md:aspect-auto' : 'aspect-video'}`}
+        className={cn(
+          "relative overflow-hidden",
+          featured ? 'md:w-1/2 aspect-video md:aspect-auto' : 'aspect-video'
+        )}
       >
         <img 
           src={event.image} 
@@ -39,7 +46,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, featured = false }) => {
           <div className="flex items-center text-sm space-x-1">
             <Calendar size={14} />
             <span>
-              {formattedDate.toLocaleDateString('en-US', { 
+              {formattedDate.toLocaleDateString('en-IN', { 
                 month: 'short', 
                 day: 'numeric', 
                 year: 'numeric' 
@@ -50,17 +57,20 @@ const EventCard: React.FC<EventCardProps> = ({ event, featured = false }) => {
       </div>
       
       {/* Content */}
-      <div className={`p-4 ${featured ? 'md:w-1/2 md:p-6' : ''}`}>
+      <div className={cn("p-4", featured ? 'md:w-1/2 md:p-6' : '')}>
         <div className="hidden md:block">
           <div className="flex justify-between items-start mb-2">
             <h3 className="text-xl font-semibold line-clamp-2">{event.title}</h3>
-            <Badge className={`${event.category === 'Music' ? 'bg-pink-500' : 
-                        event.category === 'Technology' ? 'bg-blue-500' : 
-                        event.category === 'Food & Drink' ? 'bg-orange-500' : 
-                        event.category === 'Sports & Fitness' ? 'bg-green-500' : 
-                        event.category === 'Arts' ? 'bg-purple-500' : 
-                        event.category === 'Charity & Causes' ? 'bg-red-500' : 
-                        'bg-gray-500'} text-white`}>
+            <Badge className={cn(
+              event.category === 'Music' ? 'bg-pink-500' : 
+              event.category === 'Technology' ? 'bg-blue-500' : 
+              event.category === 'Food & Drink' ? 'bg-orange-500' : 
+              event.category === 'Sports & Fitness' ? 'bg-green-500' : 
+              event.category === 'Arts' ? 'bg-purple-500' : 
+              event.category === 'Charity & Causes' ? 'bg-red-500' : 
+              'bg-gray-500',
+              'text-white'
+            )}>
               {event.category}
             </Badge>
           </div>
@@ -68,7 +78,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, featured = false }) => {
             <div className="flex items-center space-x-1">
               <Calendar size={14} />
               <span>
-                {formattedDate.toLocaleDateString('en-US', { 
+                {formattedDate.toLocaleDateString('en-IN', { 
                   month: 'short', 
                   day: 'numeric', 
                   year: 'numeric' 
@@ -82,21 +92,30 @@ const EventCard: React.FC<EventCardProps> = ({ event, featured = false }) => {
           </div>
         </div>
         
-        <p className={`text-gray-600 mb-4 ${featured ? 'line-clamp-3' : 'line-clamp-2'}`}>
+        <p className={cn(
+          "text-gray-600 mb-4",
+          featured ? 'line-clamp-3' : 'line-clamp-2'
+        )}>
           {event.description}
         </p>
         
         <div className="flex flex-col space-y-3">
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Tickets</span>
-            <span className="font-medium">{priceRange}</span>
+            <span className="font-medium flex items-center">
+              <IndianRupee size={14} className="mr-1" />
+              {priceRange}
+            </span>
           </div>
           
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
-              className={`h-2 rounded-full ${soldPercentage > 80 ? 'bg-red-500' : 
-                          soldPercentage > 50 ? 'bg-orange-500' : 
-                          'bg-eventify-success'}`}
+              className={cn(
+                "h-2 rounded-full",
+                soldPercentage > 80 ? 'bg-red-500' : 
+                soldPercentage > 50 ? 'bg-orange-500' : 
+                'bg-eventify-success'
+              )}
               style={{ width: `${soldPercentage}%` }}
             />
           </div>

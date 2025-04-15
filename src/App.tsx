@@ -14,11 +14,16 @@ import Dashboard from "./pages/Dashboard"
 import NotFound from "./pages/NotFound"
 import Login from "./pages/Login"
 import Signup from "./pages/Signup"
+import { Helmet } from "react-helmet"
 
 const queryClient = new QueryClient()
 
 const App = () => (
   <ThemeProvider defaultTheme="light">
+    <Helmet>
+      <title>Eventify - Create and Discover Events in India</title>
+      <meta name="description" content="Discover and book tickets for events across India. Create and manage your own events with Eventify." />
+    </Helmet>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
