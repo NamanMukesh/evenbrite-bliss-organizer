@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { TicketType } from '@/data/mockData';
-import { Ticket, DollarSign, Trash2, Info } from 'lucide-react';
+import { Ticket, Trash2, Info } from 'lucide-react';
+import { IndianRupee } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -61,7 +62,7 @@ const TicketTypeForm: React.FC<TicketTypeFormProps> = ({
         
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor={`price-${ticketType.id}`}>Price ($)</Label>
+            <Label htmlFor={`price-${ticketType.id}`}>Price (₹)</Label>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -74,12 +75,12 @@ const TicketTypeForm: React.FC<TicketTypeFormProps> = ({
             </TooltipProvider>
           </div>
           <div className="relative">
-            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <IndianRupee className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
             <Input
               id={`price-${ticketType.id}`}
               type="number"
               min="0"
-              step="0.01"
+              step="1"
               value={ticketType.price}
               onChange={(e) => onUpdate({ price: parseFloat(e.target.value) })}
               className="pl-10"

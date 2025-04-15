@@ -16,7 +16,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, featured = false }) => {
   const soldPercentage = (event.soldTickets / event.totalTickets) * 100;
   const lowestPrice = Math.min(...event.ticketTypes.map(type => type.price));
   const highestPrice = Math.max(...event.ticketTypes.map(type => type.price));
-  const priceRange = `$${lowestPrice.toFixed(2)} - $${highestPrice.toFixed(2)}`;
+  const priceRange = `₹${lowestPrice.toFixed(0)} - ₹${highestPrice.toFixed(0)}`;
   
   return (
     <div className={`eventify-card transition-all duration-300 ${featured ? 'md:flex md:h-80' : 'h-full'}`}>

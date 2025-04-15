@@ -25,7 +25,8 @@ import {
   ArrowLeft,
   ChevronRight,
   ChevronLeft,
-  ChevronDown
+  ChevronDown,
+  IndianRupee
 } from 'lucide-react';
 import { eventsMockData, EventType } from '@/data/mockData';
 import {
@@ -37,11 +38,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import SeatSelection from '@/components/booking/SeatSelection';
 
 const EventDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [ticketQuantities, setTicketQuantities] = useState<{ [key: string]: number }>({});
   const [isExpanded, setIsExpanded] = useState(false);
+  const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
+  const [currentStep, setCurrentStep] = useState<'tickets' | 'seats' | 'payment'>('tickets');
   
   // Find the event with the matching ID
   const event = eventsMockData.find(e => e.id === id);
@@ -82,7 +86,7 @@ const EventDetail = () => {
     return sum + (ticket.price * quantity);
   }, 0);
   
-  const handleAddToCart = () => {
+  const handleContinueToSeats = () => {
     if (totalItems === 0) {
       toast({
         title: "No tickets selected",
@@ -92,10 +96,42 @@ const EventDetail = () => {
       return;
     }
     
-    // In a real app, this would add the tickets to a cart or proceed to checkout
+    setCurrentStep('seats');
+  };
+
+  const handleSeatSelection = (seatId: string) => {
+    if (selectedSeats.includes(seatId)) {
+      setSelectedSeats(selectedSeats.filter(seat => seat !== seatId));
+    } else {
+      if (selectedSeats.length < totalItems) {
+        setSelectedSeats([...selectedSeats, seatId]);
+      } else {
+        toast({
+          title: "Maximum seats selected",
+          description: `You can only select ${totalItems} seats based on your ticket quantity.`,
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleContinueToPayment = () => {
+    if (selectedSeats.length < totalItems) {
+      toast({
+        title: "Seat selection incomplete",
+        description: `Please select ${totalItems - selectedSeats.length} more seats.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setCurrentStep('payment');
+  };
+
+  const handlePayment = () => {
     toast({
-      title: "Tickets added to cart",
-      description: `${totalItems} tickets added to your cart.`,
+      title: "Payment successful",
+      description: `You have successfully booked ${totalItems} tickets for ${event.title}.`,
     });
   };
 
@@ -112,6 +148,262 @@ const EventDetail = () => {
   const relatedEvents = eventsMockData
     .filter(e => e.category === event.category && e.id !== event.id)
     .slice(0, 3);
+
+  const renderBookingStep = () => {
+    switch (currentStep) {
+      case 'tickets':
+        return (
+          <Card className="sticky top-20">
+            <CardHeader>
+              <CardTitle>Tickets</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {event.ticketTypes.map((ticket) => {
+                const quantity = ticketQuantities[ticket.id] || 0;
+                const soldOut = ticket.available - ticket.sold <= 0;
+                const availableText = soldOut 
+                  ? 'Sold Out' 
+                  : `${ticket.available - ticket.sold} tickets left`;
+                const availableClass = soldOut 
+                  ? 'text-red-500' 
+                  : ticket.available - ticket.sold < 10 
+                    ? 'text-orange-500' 
+                    : 'text-eventify-success';
+                
+                return (
+                  <div key={ticket.id} className="border rounded-md p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="font-medium">{ticket.name}</h3>
+                        <p className="text-sm text-gray-600">{ticket.description}</p>
+                      </div>
+                      <span className="font-bold flex items-center">
+                        <IndianRupee className="h-4 w-4" />
+                        {ticket.price.toFixed(0)}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center mt-4">
+                      <span className={`text-sm ${availableClass}`}>
+                        {availableText}
+                      </span>
+                      
+                      {soldOut ? (
+                        <Button variant="outline" disabled className="opacity-50">
+                          Sold Out
+                        </Button>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            disabled={quantity === 0}
+                            onClick={() => handleQuantityChange(ticket.id, quantity - 1)}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          <span className="w-8 text-center">{quantity}</span>
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            disabled={quantity >= (ticket.available - ticket.sold)}
+                            onClick={() => handleQuantityChange(ticket.id, quantity + 1)}
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </CardContent>
+            
+            {totalItems > 0 && (
+              <>
+                <Separator />
+                <CardFooter className="flex-col items-stretch space-y-4 pt-4">
+                  <div className="flex justify-between font-medium">
+                    <span>Total</span>
+                    <span className="flex items-center">
+                      <IndianRupee className="h-4 w-4" />
+                      {totalPrice.toFixed(0)}
+                    </span>
+                  </div>
+                  
+                  <Button className="w-full bg-eventify-purple" onClick={handleContinueToSeats}>
+                    <Ticket className="mr-2 h-4 w-4" />
+                    Continue to Seat Selection
+                  </Button>
+                </CardFooter>
+              </>
+            )}
+          </Card>
+        );
+      
+      case 'seats':
+        return (
+          <Card className="sticky top-20">
+            <CardHeader>
+              <CardTitle>Select Your Seats</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-2">
+                  Please select {totalItems} seats for your tickets
+                </p>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-gray-200 rounded mr-2"></div>
+                    <span className="text-sm">Available</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-eventify-purple rounded mr-2"></div>
+                    <span className="text-sm">Selected</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-gray-400 rounded mr-2"></div>
+                    <span className="text-sm">Booked</span>
+                  </div>
+                </div>
+              </div>
+              
+              <SeatSelection 
+                totalSeats={event.totalTickets} 
+                bookedSeats={Array.from({ length: event.soldTickets }, (_, i) => `A${i + 1}`)}
+                selectedSeats={selectedSeats}
+                onSeatSelect={handleSeatSelection}
+                maxSelectableSeats={totalItems}
+              />
+              
+              <div className="mt-4">
+                <p className="text-sm text-gray-600 mb-2">
+                  Selected: {selectedSeats.length} of {totalItems} seats
+                </p>
+                {selectedSeats.length > 0 && (
+                  <p className="text-sm font-medium">
+                    Seats: {selectedSeats.join(', ')}
+                  </p>
+                )}
+              </div>
+            </CardContent>
+            
+            <Separator />
+            <CardFooter className="flex justify-between pt-4">
+              <Button variant="outline" onClick={() => setCurrentStep('tickets')}>
+                Back to Tickets
+              </Button>
+              <Button 
+                className="bg-eventify-purple" 
+                onClick={handleContinueToPayment}
+                disabled={selectedSeats.length < totalItems}
+              >
+                Continue to Payment
+              </Button>
+            </CardFooter>
+          </Card>
+        );
+      
+      case 'payment':
+        return (
+          <Card className="sticky top-20">
+            <CardHeader>
+              <CardTitle>Payment</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-md border p-4">
+                <h3 className="font-medium mb-2">Order Summary</h3>
+                <div className="space-y-2 text-sm">
+                  {Object.entries(ticketQuantities).map(([id, qty]) => {
+                    if (qty === 0) return null;
+                    const ticket = event.ticketTypes.find(t => t.id === id);
+                    if (!ticket) return null;
+                    
+                    return (
+                      <div key={id} className="flex justify-between">
+                        <span>{qty} × {ticket.name}</span>
+                        <span className="flex items-center">
+                          <IndianRupee className="h-3 w-3" />
+                          {(ticket.price * qty).toFixed(0)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  
+                  <div className="flex justify-between font-medium pt-2 border-t">
+                    <span>Total</span>
+                    <span className="flex items-center">
+                      <IndianRupee className="h-4 w-4" />
+                      {totalPrice.toFixed(0)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <h3 className="font-medium">Payment Method</h3>
+                
+                <div className="grid gap-4">
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="radio" 
+                      id="upi" 
+                      name="paymentMethod" 
+                      checked 
+                      className="h-4 w-4 text-eventify-purple" 
+                    />
+                    <label htmlFor="upi" className="text-sm font-medium">UPI</label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="radio" 
+                      id="card" 
+                      name="paymentMethod"
+                      className="h-4 w-4 text-eventify-purple" 
+                    />
+                    <label htmlFor="card" className="text-sm font-medium">Credit/Debit Card</label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="radio" 
+                      id="netbanking" 
+                      name="paymentMethod"
+                      className="h-4 w-4 text-eventify-purple" 
+                    />
+                    <label htmlFor="netbanking" className="text-sm font-medium">Net Banking</label>
+                  </div>
+                </div>
+                
+                <div className="pt-2">
+                  <label htmlFor="upiId" className="block text-sm font-medium mb-1">UPI ID</label>
+                  <Input 
+                    id="upiId" 
+                    placeholder="yourname@upi" 
+                    className="mb-2"
+                  />
+                  <p className="text-xs text-gray-500">Enter your UPI ID to make the payment</p>
+                </div>
+              </div>
+            </CardContent>
+            
+            <Separator />
+            <CardFooter className="flex justify-between pt-4">
+              <Button variant="outline" onClick={() => setCurrentStep('seats')}>
+                Back to Seats
+              </Button>
+              <Button className="bg-eventify-purple" onClick={handlePayment}>
+                Pay Now
+              </Button>
+            </CardFooter>
+          </Card>
+        );
+      
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -325,86 +617,7 @@ const EventDetail = () => {
               
               {/* Ticket Section */}
               <div className="col-span-1 space-y-6">
-                <Card className="sticky top-20">
-                  <CardHeader>
-                    <CardTitle>Tickets</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {event.ticketTypes.map((ticket) => {
-                      const quantity = ticketQuantities[ticket.id] || 0;
-                      const soldOut = ticket.available - ticket.sold <= 0;
-                      const availableText = soldOut 
-                        ? 'Sold Out' 
-                        : `${ticket.available - ticket.sold} tickets left`;
-                      const availableClass = soldOut 
-                        ? 'text-red-500' 
-                        : ticket.available - ticket.sold < 10 
-                          ? 'text-orange-500' 
-                          : 'text-eventify-success';
-                      
-                      return (
-                        <div key={ticket.id} className="border rounded-md p-4">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <h3 className="font-medium">{ticket.name}</h3>
-                              <p className="text-sm text-gray-600">{ticket.description}</p>
-                            </div>
-                            <span className="font-bold">${ticket.price.toFixed(2)}</span>
-                          </div>
-                          
-                          <div className="flex justify-between items-center mt-4">
-                            <span className={`text-sm ${availableClass}`}>
-                              {availableText}
-                            </span>
-                            
-                            {soldOut ? (
-                              <Button variant="outline" disabled className="opacity-50">
-                                Sold Out
-                              </Button>
-                            ) : (
-                              <div className="flex items-center space-x-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="icon"
-                                  disabled={quantity === 0}
-                                  onClick={() => handleQuantityChange(ticket.id, quantity - 1)}
-                                >
-                                  <ChevronLeft className="h-4 w-4" />
-                                </Button>
-                                <span className="w-8 text-center">{quantity}</span>
-                                <Button 
-                                  variant="outline" 
-                                  size="icon"
-                                  disabled={quantity >= (ticket.available - ticket.sold)}
-                                  onClick={() => handleQuantityChange(ticket.id, quantity + 1)}
-                                >
-                                  <ChevronRight className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </CardContent>
-                  
-                  {totalItems > 0 && (
-                    <>
-                      <Separator />
-                      <CardFooter className="flex-col items-stretch space-y-4 pt-4">
-                        <div className="flex justify-between font-medium">
-                          <span>Total</span>
-                          <span>${totalPrice.toFixed(2)}</span>
-                        </div>
-                        
-                        <Button className="w-full bg-eventify-purple" onClick={handleAddToCart}>
-                          <Ticket className="mr-2 h-4 w-4" />
-                          Get Tickets
-                        </Button>
-                      </CardFooter>
-                    </>
-                  )}
-                </Card>
+                {renderBookingStep()}
                 
                 <Card>
                   <CardContent className="pt-6">
